@@ -24,7 +24,7 @@ export default function HomePage() {
     estado: "",
   })
   const [mostrarFiltros, setMostrarFiltros] = useState(false)
-  const [productos, setProductos] = useState([
+  const [productos] = useState([
     {
       id: "1",
       titulo: "iPhone 13 Pro Max 256GB",

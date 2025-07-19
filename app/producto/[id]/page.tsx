@@ -10,12 +10,13 @@ import Link from "next/link"
 import Image from "next/image"
 import { useState } from "react"
 
-export default function ProductoPage({ params }: { params: { id: string } }) {
+export default async function ProductoPage({ params }: { params: Promise<{ id: string }> }) {
   const [imagenActual, setImagenActual] = useState(0)
+  const resolvedParams = await params
 
   // Datos simulados del producto
   const producto = {
-    id: params.id,
+    id: resolvedParams.id,
     titulo: "iPhone 13 Pro Max 256GB - Estado Impecable",
     precio: 850000,
     descripcion: `iPhone 13 Pro Max de 256GB en excelente estado. Usado por solo 8 meses, siempre con funda y protector de pantalla.

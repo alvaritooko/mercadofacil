@@ -31,7 +31,12 @@ const LoginPage = () => {
     setMessage("")
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      if (!supabase) {
+        setError("Supabase no está configurado")
+        return
+      }
+
+      const { error } = await supabase.auth.signInWithPassword({
         email: formData.email,
         password: formData.password,
       })
@@ -57,7 +62,12 @@ const LoginPage = () => {
     setMessage("")
 
     try {
-      const { data, error } = await supabase.auth.signUp({
+      if (!supabase) {
+        setError("Supabase no está configurado")
+        return
+      }
+
+      const { error } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
