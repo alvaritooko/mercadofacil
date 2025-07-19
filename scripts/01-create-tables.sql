@@ -1,18 +1,59 @@
--- Crear tabla de usuarios
-CREATE TABLE usuarios (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  email VARCHAR(255) UNIQUE NOT NULL,
+-- Crear tabla de perfiles de usuario (se conecta automáticamente con auth.users)
+CREATE TABLE perfiles (
+  id UUID REFERENCES auth.users(id) PRIMARY KEY,
   nombre VARCHAR(255) NOT NULL,
-  telefono VARCHAR(20),
-  email_verificado BOOLEAN DEFAULT FALSE,
-  telefono_verificado BOOLEAN DEFAULT FALSE,
-  plan VARCHAR(20) DEFAULT 'gratuito', -- 'gratuito' o 'premium'
-  fecha_plan TIMESTAMP,
+  plan VARCHAR(20) DEFAULT 'gratuito',
   publicaciones_mes INTEGER DEFAULT 0,
-  ultima_publicacion TIMESTAMP,
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW()
+  created_at TIMESTAMP DEFAULT NOW()
 );
+
+-- Crear tabla de productos simplificada
+CREATE TABLE productos (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  usuario_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  titulo VARCHAR(255) NOT NULL,
+  descripcion TEXT NOT NULL,
+  precio DECIMAL(10,2) NOT NULL,
+  categoria VARCHAR(100) NOT NULL,
+  estado VARCHAR(50) NOT NULL,
+  ciudad VARCHAR(100) NOT NULL,
+  imagenes TEXT[], -- Array de URLs de imágenes
+  activo BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Función para crear perfil automáticamente cuando se registra un usuario
+CREATE OR REPLACE FUNCTION crear_perfil_usuario()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO perfiles (id, nombre)
+  VALUES (NEW.id, COALESCE(NEW.raw_user_meta_data->>'nombre', 'Usuario'));
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger para crear perfil automáticamente
+CREATE TRIGGER trigger_crear_perfil
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION crear_perfil_usuario();
+
+-- Políticas de seguridad RLS
+ALTER TABLE perfiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE productos ENABLE ROW LEVEL SECURITY;
+
+-- Política para perfiles
+CREATE POLICY "Los usuarios pueden ver y editar su propio perfil" ON perfiles
+  FOR ALL USING (auth.uid() = id);
+
+-- Política para productos
+CREATE POLICY "Cualquiera puede ver productos activos" ON productos
+  FOR SELECT USING (activo = true);
+
+CREATE POLICY "Los usuarios pueden crear sus propios productos" ON productos
+  FOR INSERT WITH CHECK (auth.uid() = usuario_id);
+
+CREATE POLICY "Los usuarios pueden editar sus propios productos" ON productos
+  FOR UPDATE USING (auth.uid() = usuario_id);
 
 -- Crear tabla de categorías
 CREATE TABLE categorias (
@@ -30,26 +71,6 @@ INSERT INTO categorias (nombre, slug) VALUES
 ('Vehículos', 'vehiculos'),
 ('Libros y Música', 'libros'),
 ('Otros', 'otros');
-
--- Crear tabla de productos
-CREATE TABLE productos (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  usuario_id UUID REFERENCES usuarios(id) ON DELETE CASCADE,
-  titulo VARCHAR(255) NOT NULL,
-  descripcion TEXT NOT NULL,
-  precio DECIMAL(10,2) NOT NULL,
-  categoria_id INTEGER REFERENCES categorias(id),
-  estado VARCHAR(50) NOT NULL,
-  ciudad VARCHAR(100) NOT NULL,
-  codigo_postal VARCHAR(10),
-  telefono_contacto VARCHAR(20),
-  email_contacto VARCHAR(255),
-  activo BOOLEAN DEFAULT TRUE,
-  destacado BOOLEAN DEFAULT FALSE,
-  vistas INTEGER DEFAULT 0,
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW()
-);
 
 -- Crear tabla de imágenes de productos
 CREATE TABLE imagenes_producto (

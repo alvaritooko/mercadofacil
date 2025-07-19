@@ -26,7 +26,7 @@ Una plataforma de marketplace moderna desarrollada con Next.js 15, TypeScript y 
 
 1. **Clonar el repositorio**
 ```bash
-git clone https://github.com/tu-usuario/mercado-facil.git
+git clone https://github.com/alvaritooko/mercadofacil.git
 cd mercado-facil
 ```
 
@@ -186,8 +186,8 @@ Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más det
 
 ## 📞 Contacto
 
-- **Proyecto**: [MercadoFácil](https://github.com/tu-usuario/mercado-facil)
-- **Issues**: [GitHub Issues](https://github.com/tu-usuario/mercado-facil/issues)
+- **Proyecto**: [MercadoFácil](https://github.com/alvaritooko/mercadofacil)
+- **Issues**: [GitHub Issues](https://github.com/alvaritooko/mercadofacil/issues)
 
 ---
 
